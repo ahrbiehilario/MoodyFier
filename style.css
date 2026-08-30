@@ -1,0 +1,1152 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --pink: #f36f9b;
+    --pink-dark: #dc557f;
+    --purple: #713c91;
+    --purple-dark: #5a2e75;
+    --green: #8fcdb0;
+    --text: #4d3155;
+    --white: #ffffff;
+    --light-purple: #eee2f5;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: hidden;
+    font-family: "Nunito", Arial, sans-serif;
+    color: var(--text);
+    background: linear-gradient(100deg, #fff0b3 0%, #f9a7df 100%);
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid var(--purple);
+    outline-offset: 2px;
+}
+
+.page {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.phone {
+    width: min(100%, 760px);
+    height: min(94vh, 900px);
+    height: min(94dvh, 900px);
+    min-height: 560px;
+    overflow: hidden;
+    border-radius: 34px;
+    background: rgba(255, 255, 255, 0.24);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 20px 55px rgba(90, 40, 100, 0.18);
+}
+
+.app {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: linear-gradient(100deg, rgba(255, 240, 179, 0.78), rgba(249, 167, 223, 0.78));
+}
+
+.hero {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: clamp(22px, 5vh, 48px) 20px clamp(14px, 2.5vh, 24px);
+}
+
+.hero h1 {
+    font-family: "Baloo 2", sans-serif;
+    font-size: clamp(40px, 7vw, 68px);
+    line-height: 0.95;
+    font-weight: 800;
+    color: var(--purple);
+    margin-bottom: 10px;
+}
+
+.hero p {
+    font-size: clamp(14px, 2vw, 20px);
+    line-height: 1.25;
+    font-weight: 600;
+    color: #68456f;
+}
+
+.moods {
+    width: min(92%, 660px);
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0 auto;
+    padding: 8px 0 18px;
+    display: grid;
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+    gap: clamp(10px, 1.8vh, 16px);
+}
+
+.mood-row {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(105px, 0.9fr) minmax(190px, 1.5fr);
+    gap: 12px;
+    align-items: stretch;
+}
+
+.mood-art {
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: clamp(28px, 4vw, 42px);
+    background: rgba(255, 255, 255, 0.36);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.mood-art span {
+    display: inline-block;
+    line-height: 1;
+}
+
+.lavender {
+    background: linear-gradient(145deg, #e6d7ff, #cdb4ef);
+}
+
+.eucalyptus {
+    background: linear-gradient(145deg, #d7f0df, #a9d9bb);
+}
+
+.roses {
+    background: linear-gradient(145deg, #ffd1df, #f3a8c1);
+}
+
+.ocean {
+    background: linear-gradient(145deg, #bfe8f1, #8ed0df);
+}
+
+.flower-one {
+    transform: rotate(-18deg) translateY(12px);
+}
+
+.flower-two {
+    transform: translateY(-10px) rotate(12deg);
+}
+
+.flower-three {
+    transform: translateY(12px) rotate(22deg);
+}
+
+.mood-control {
+    min-width: 0;
+    border-radius: 28px;
+    padding: 0 clamp(16px, 3vw, 28px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--pink);
+    box-shadow: 0 8px 18px rgba(211, 76, 119, 0.14);
+}
+
+.mood-control label {
+    min-width: 0;
+    color: var(--white);
+    font-family: "Baloo 2", sans-serif;
+    font-size: clamp(20px, 3vw, 30px);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.switch {
+    position: relative;
+    flex: 0 0 auto;
+    width: 64px;
+    height: 34px;
+    padding: 0;
+    border: 2px solid #4b3548;
+    border-radius: 50px;
+    background: var(--white);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.switch-thumb {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    left: 2px;
+    top: 50%;
+    border-radius: 50%;
+    transform: translateY(-50%);
+    background: var(--pink);
+    border: 1px solid #4b3548;
+    transition: transform 0.22s ease, background 0.22s ease;
+}
+
+.switch[aria-checked="true"] {
+    background: var(--green);
+}
+
+.switch[aria-checked="true"] .switch-thumb {
+    transform: translate(30px, -50%);
+    background: var(--green);
+}
+
+.bottom-nav {
+    width: min(92%, 660px);
+    flex: 0 0 clamp(72px, 11vh, 96px);
+    margin: 0 auto;
+    border-top: 1px solid rgba(112, 65, 150, 0.35);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.nav-item {
+    border: 0;
+    background: transparent;
+    color: var(--purple);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    border-radius: 16px 16px 0 0;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.nav-item:active {
+    transform: translateY(1px);
+}
+
+.nav-item strong {
+    font-size: clamp(11px, 1.6vw, 15px);
+}
+
+.nav-icon {
+    font-family: Arial, sans-serif;
+    font-size: clamp(25px, 4vw, 34px);
+    line-height: 1;
+}
+
+.info {
+    font-weight: 800;
+}
+
+.modal-overlay,
+.schedule-modal,
+.simple-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(66, 35, 70, 0.34);
+    backdrop-filter: blur(4px);
+}
+
+.modal-overlay[hidden],
+.schedule-modal[hidden],
+.simple-modal[hidden],
+.bluetooth-on[hidden],
+.bluetooth-off[hidden] {
+    display: none;
+}
+
+.bluetooth-panel,
+.simple-panel,
+.schedule-panel {
+    position: relative;
+    width: min(100%, 430px);
+    max-height: min(88vh, 720px);
+    max-height: min(88dvh, 720px);
+    overflow-y: auto;
+    border-radius: 28px;
+    padding: 28px 22px 24px;
+    background: linear-gradient(135deg, #fff0c9, #f7b5e2);
+    box-shadow: 0 20px 50px rgba(67, 30, 75, 0.25);
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    z-index: 3;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--purple);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bluetooth-panel {
+    text-align: center;
+}
+
+.bluetooth-logo {
+    margin-bottom: 2px;
+    color: var(--purple);
+    font-size: 38px;
+    font-weight: 700;
+}
+
+.bluetooth-panel h2,
+.simple-panel h2,
+.schedule-panel h2 {
+    margin-bottom: 18px;
+    font-family: "Baloo 2", sans-serif;
+    color: var(--purple);
+    font-size: 34px;
+    line-height: 1;
+}
+
+.bluetooth-large-icon {
+    margin-bottom: 8px;
+    color: var(--pink-dark);
+    font-size: 58px;
+}
+
+.bluetooth-off h3 {
+    margin-bottom: 7px;
+    font-size: 20px;
+}
+
+.bluetooth-off p,
+.simple-panel p {
+    margin: 0 auto 20px;
+    max-width: 320px;
+    line-height: 1.5;
+}
+
+.bluetooth-action {
+    width: 100%;
+    min-height: 48px;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 18px;
+    background: var(--pink);
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.bluetooth-action:hover {
+    background: var(--pink-dark);
+}
+
+.bluetooth-action:active {
+    transform: scale(0.99);
+}
+
+.bluetooth-action:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.bluetooth-active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    font-weight: 800;
+}
+
+.active-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #55a879;
+    box-shadow: 0 0 0 4px rgba(85, 168, 121, 0.16);
+}
+
+.devices-title {
+    margin-bottom: 9px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--purple);
+}
+
+.device-list {
+    max-height: 230px;
+    overflow-y: auto;
+    margin-bottom: 14px;
+    padding: 2px;
+}
+
+.device-empty {
+    min-height: 120px;
+    padding: 18px;
+    border: 1px dashed rgba(113, 60, 145, 0.35);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.device-empty .search-icon {
+    font-size: 30px;
+}
+
+.device-empty small {
+    max-width: 260px;
+    line-height: 1.4;
+}
+
+.bluetooth-device {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.45);
+    text-align: left;
+}
+
+.device-icon {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--green);
+    color: white;
+    font-size: 24px;
+}
+
+.device-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.device-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 800;
+}
+
+.device-type {
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.schedule-panel {
+    width: min(100%, 590px);
+    max-height: min(92vh, 850px);
+    max-height: min(92dvh, 850px);
+    padding: 28px 24px 24px;
+}
+
+.schedule-heading {
+    text-align: center;
+    padding: 0 28px 17px;
+}
+
+.schedule-symbol {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 7px;
+    display: grid;
+    place-items: center;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--purple);
+    font-size: 35px;
+}
+
+.schedule-heading h2 {
+    margin-bottom: 5px;
+}
+
+.schedule-heading p {
+    margin: 0;
+    color: #79557f;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.form-section {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--purple);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.form-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 13px;
+    border: 1px solid rgba(113, 60, 145, 0.2);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.time-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.day-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.day-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.day-option span {
+    min-height: 42px;
+    display: grid;
+    place-items: center;
+    padding: 5px 2px;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.6);
+    color: #704b76;
+    font-size: 11px;
+    font-weight: 800;
+    border: 1px solid transparent;
+    transition: 0.18s ease;
+}
+
+.day-option input:checked + span {
+    background: var(--pink);
+    border-color: var(--pink-dark);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.day-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 7px;
+}
+
+.day-actions button {
+    flex: 1;
+    min-height: 32px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--purple);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.day-actions button:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.schedule-form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 9px;
+    margin-top: 18px;
+}
+
+.cancel-button,
+.save-schedule-button {
+    min-height: 46px;
+    border: 0;
+    border-radius: 15px;
+    font-weight: 800;
+}
+
+.cancel-button {
+    background: rgba(255, 255, 255, 0.55);
+    color: var(--purple);
+}
+
+.save-schedule-button {
+    background: var(--pink);
+    color: white;
+}
+
+.save-schedule-button:hover {
+    background: var(--pink-dark);
+}
+
+.saved-schedules {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(113, 60, 145, 0.2);
+}
+
+.saved-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.saved-header h3 {
+    color: var(--purple);
+    font-family: "Baloo 2", sans-serif;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.saved-header p {
+    margin: 3px 0 0;
+    color: #806188;
+    font-size: 11px;
+}
+
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.no-schedules {
+    padding: 25px 15px;
+    border: 1px dashed rgba(113, 60, 145, 0.28);
+    border-radius: 18px;
+    text-align: center;
+    color: #806188;
+}
+
+.no-schedules .empty-icon {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 30px;
+}
+
+.no-schedules strong {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--purple);
+}
+
+.no-schedules span {
+    font-size: 12px;
+}
+
+.schedule-card {
+    position: relative;
+    padding: 13px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.53);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: 0.2s ease;
+}
+
+.schedule-card.disabled {
+    opacity: 0.55;
+}
+
+.schedule-card.active-now {
+    box-shadow: 0 0 0 2px rgba(143, 205, 176, 0.75);
+}
+
+.schedule-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.schedule-mood-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.65);
+    font-size: 23px;
+}
+
+.schedule-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.schedule-mood-name {
+    color: var(--purple);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.schedule-time {
+    margin-top: 1px;
+    color: #614665;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.schedule-days {
+    margin-top: 3px;
+    color: #846589;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.schedule-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.schedule-action {
+    width: 31px;
+    height: 31px;
+    border: 0;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--purple);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.schedule-action:hover {
+    background: white;
+}
+
+.schedule-action.delete {
+    color: #c84e70;
+}
+
+.schedule-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(113, 60, 145, 0.1);
+}
+
+.active-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #579b78;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.active-label span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #63b487;
+}
+
+.schedule-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    border: 0;
+    border-radius: 30px;
+    background: #d5c7d7;
+}
+
+.schedule-toggle::after {
+    content: "";
+    position: absolute;
+    width: 17px;
+    height: 17px;
+    top: 2.5px;
+    left: 3px;
+    border-radius: 50%;
+    background: white;
+    transition: 0.2s ease;
+}
+
+.schedule-toggle.enabled {
+    background: var(--green);
+}
+
+.schedule-toggle.enabled::after {
+    left: 20px;
+}
+
+.about-panel {
+    width: min(100%, 560px);
+    max-height: min(90vh, 760px);
+    max-height: min(90dvh, 760px);
+    padding: 34px 24px 28px;
+    text-align: left;
+}
+
+.about-header {
+    text-align: center;
+    padding: 4px 25px 18px;
+}
+
+.about-logo {
+    font-size: 38px;
+    margin-bottom: 4px;
+}
+
+.about-header h2 {
+    margin-bottom: 5px;
+}
+
+.about-subtitle {
+    margin: 0 !important;
+    max-width: none !important;
+    color: #79557f;
+    font-size: 14px;
+    line-height: 1.4 !important;
+}
+
+.about-section {
+    margin-top: 13px;
+    padding: 17px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.about-section h3 {
+    margin-bottom: 8px;
+    color: var(--purple);
+    font-family: "Baloo 2", sans-serif;
+    font-size: 20px;
+    line-height: 1.1;
+}
+
+.about-section p {
+    margin: 0 !important;
+    max-width: none !important;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.members-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.member {
+    padding: 9px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.52);
+    color: #5b3c62;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 2000;
+    max-width: calc(100% - 32px);
+    padding: 11px 18px;
+    border-radius: 999px;
+    background: rgba(70, 45, 75, 0.94);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%, 12px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+@media (max-width: 600px) {
+    body {
+        overflow: hidden;
+    }
+
+    .page {
+        padding: 0;
+    }
+
+    .phone {
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        border-radius: 0;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .hero {
+        padding-top: clamp(18px, 5vh, 32px);
+    }
+
+    .moods {
+        width: 94%;
+        gap: 9px;
+        padding-bottom: 10px;
+    }
+
+    .mood-row {
+        grid-template-columns: minmax(82px, 0.85fr) minmax(150px, 1.5fr);
+        gap: 8px;
+    }
+
+    .mood-art {
+        border-radius: 20px;
+        font-size: clamp(23px, 7vw, 34px);
+    }
+
+    .mood-control {
+        border-radius: 22px;
+        padding: 0 12px;
+    }
+
+    .mood-control label {
+        font-size: clamp(17px, 5vw, 23px);
+    }
+
+    .switch {
+        width: 55px;
+        height: 29px;
+    }
+
+    .switch-thumb {
+        width: 21px;
+        height: 21px;
+    }
+
+    .switch[aria-checked="true"] .switch-thumb {
+        transform: translate(26px, -50%);
+    }
+
+    .bottom-nav {
+        width: 94%;
+        flex-basis: 68px;
+    }
+
+    .nav-icon {
+        font-size: 24px;
+    }
+
+    .nav-item strong {
+        font-size: 11px;
+    }
+
+    .schedule-modal {
+        padding: 8px;
+    }
+
+    .schedule-panel {
+        width: 100%;
+        max-height: 96vh;
+        max-height: 96dvh;
+        border-radius: 24px;
+        padding: 23px 14px 18px;
+    }
+
+    .schedule-heading {
+        padding-bottom: 12px;
+    }
+
+    .schedule-symbol {
+        width: 48px;
+        height: 48px;
+        font-size: 29px;
+    }
+
+    .schedule-panel h2 {
+        font-size: 29px;
+        margin-bottom: 4px;
+    }
+
+    .time-grid {
+        gap: 8px;
+    }
+
+    .days-grid {
+        gap: 3px;
+    }
+
+    .day-option span {
+        min-height: 38px;
+        font-size: 10px;
+    }
+
+    .day-actions {
+        gap: 4px;
+    }
+
+    .day-actions button {
+        font-size: 10px;
+    }
+
+    .schedule-form-actions {
+        margin-top: 13px;
+    }
+
+    .saved-schedules {
+        margin-top: 16px;
+        padding-top: 13px;
+    }
+
+    .schedule-card {
+        padding: 10px;
+    }
+
+    .schedule-mood-icon {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+        font-size: 20px;
+    }
+
+    .schedule-mood-name {
+        font-size: 14px;
+    }
+
+    .schedule-time {
+        font-size: 12px;
+    }
+
+    .schedule-days {
+        font-size: 10px;
+    }
+
+    .about-panel {
+        width: 96%;
+        max-height: 92vh;
+        max-height: 92dvh;
+        padding: 28px 14px 18px;
+    }
+
+    .about-header {
+        padding: 3px 20px 12px;
+    }
+
+    .about-logo {
+        font-size: 32px;
+    }
+
+    .about-panel h2 {
+        font-size: 30px;
+    }
+
+    .about-section {
+        margin-top: 9px;
+        padding: 13px;
+    }
+
+    .about-section h3 {
+        font-size: 18px;
+    }
+
+    .about-section p {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .members-list {
+        grid-template-columns: 1fr;
+    }
+
+    .member {
+        font-size: 12px;
+        padding: 8px 9px;
+    }
+}
+
+@media (max-height: 650px) and (min-width: 601px) {
+    .hero {
+        padding-top: 14px;
+        padding-bottom: 10px;
+    }
+
+    .hero h1 {
+        font-size: 42px;
+        margin-bottom: 4px;
+    }
+
+    .hero p {
+        font-size: 14px;
+    }
+
+    .bottom-nav {
+        flex-basis: 64px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

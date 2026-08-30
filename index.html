@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f7779d">
+    <meta name="description" content="Moodly - choose the atmosphere that matches your mood.">
+    <title>Moodly</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="page">
+        <section class="phone" aria-label="Moodly application">
+            <section class="app">
+
+                <header class="hero">
+                    <h1>Welcome to<br>Moodly!</h1>
+                    <p>“Your atmosphere, your mood,<br>your glow.”</p>
+                </header>
+
+                <section class="moods" aria-label="Mood controls">
+
+                    <article class="mood-row">
+                        <div class="mood-art lavender" aria-hidden="true">
+                            <span class="flower flower-one">🌿</span>
+                            <span class="flower flower-two">💜</span>
+                            <span class="flower flower-three">💜</span>
+                        </div>
+
+                        <div class="mood-control">
+                            <label for="calm">Calm</label>
+
+                            <button
+                                class="switch"
+                                id="calm"
+                                type="button"
+                                role="switch"
+                                aria-checked="false"
+                                data-mood="Calm"
+                                aria-label="Toggle Calm mood">
+                                <span class="switch-thumb"></span>
+                            </button>
+                        </div>
+                    </article>
+
+                    <article class="mood-row">
+                        <div class="mood-art eucalyptus" aria-hidden="true">
+                            <span>🌿</span>
+                            <span>🍃</span>
+                            <span>🌿</span>
+                        </div>
+
+                        <div class="mood-control">
+                            <label for="fresh">Fresh</label>
+
+                            <button
+                                class="switch"
+                                id="fresh"
+                                type="button"
+                                role="switch"
+                                aria-checked="false"
+                                data-mood="Fresh"
+                                aria-label="Toggle Fresh mood">
+                                <span class="switch-thumb"></span>
+                            </button>
+                        </div>
+                    </article>
+
+                    <article class="mood-row">
+                        <div class="mood-art roses" aria-hidden="true">
+                            <span>🌹</span>
+                            <span>🌹</span>
+                            <span>🌿</span>
+                        </div>
+
+                        <div class="mood-control">
+                            <label for="love">Love</label>
+
+                            <button
+                                class="switch"
+                                id="love"
+                                type="button"
+                                role="switch"
+                                aria-checked="false"
+                                data-mood="Love"
+                                aria-label="Toggle Love mood">
+                                <span class="switch-thumb"></span>
+                            </button>
+                        </div>
+                    </article>
+
+                    <article class="mood-row">
+                        <div class="mood-art ocean" aria-hidden="true">
+                            <span>🌊</span>
+                        </div>
+
+                        <div class="mood-control">
+                            <label for="serene">Serene</label>
+
+                            <button
+                                class="switch"
+                                id="serene"
+                                type="button"
+                                role="switch"
+                                aria-checked="false"
+                                data-mood="Serene"
+                                aria-label="Toggle Serene mood">
+                                <span class="switch-thumb"></span>
+                            </button>
+                        </div>
+                    </article>
+
+                </section>
+
+                <nav class="bottom-nav" aria-label="Application navigation">
+
+                    <button class="nav-item" id="bluetoothButton" type="button">
+                        <span class="nav-icon bluetooth" aria-hidden="true">ᛒ</span>
+                        <strong>Bluetooth</strong>
+                    </button>
+
+                    <button class="nav-item" id="scheduleButton" type="button">
+                        <span class="nav-icon calendar" aria-hidden="true">▣</span>
+                        <strong>Schedule</strong>
+                    </button>
+
+                    <button class="nav-item" id="aboutButton" type="button">
+                        <span class="nav-icon info" aria-hidden="true">i</span>
+                        <strong>About</strong>
+                    </button>
+
+                </nav>
+
+            </section>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="bluetoothOverlay" hidden>
+        <div class="bluetooth-panel" role="dialog" aria-modal="true" aria-labelledby="bluetoothTitle">
+
+            <button class="modal-close" id="bluetoothClose" type="button" aria-label="Close Bluetooth dialog">
+                ×
+            </button>
+
+            <div class="bluetooth-logo" aria-hidden="true">ᛒ</div>
+
+            <h2 id="bluetoothTitle">Bluetooth</h2>
+
+            <div class="bluetooth-off" id="bluetoothOff">
+
+                <div class="bluetooth-large-icon" aria-hidden="true">ᛒ</div>
+
+                <h3>Bluetooth is Off</h3>
+
+                <p>Turn on Bluetooth to discover nearby devices.</p>
+
+                <button class="bluetooth-action" id="turnBluetoothOn" type="button">
+                    Turn On Bluetooth
+                </button>
+
+            </div>
+
+            <div class="bluetooth-on" id="bluetoothOn" hidden>
+
+                <div class="bluetooth-active">
+                    <span class="active-dot" aria-hidden="true"></span>
+                    Bluetooth is On
+                </div>
+
+                <div class="devices-title">Nearby Devices</div>
+
+                <div class="device-list" id="deviceList" aria-live="polite"></div>
+
+                <button class="bluetooth-action" id="scanBluetooth" type="button">
+                    Scan for Devices
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="schedule-modal" id="scheduleModal" hidden>
+
+        <div class="schedule-panel" role="dialog" aria-modal="true" aria-labelledby="scheduleTitle">
+
+            <button class="modal-close" id="scheduleClose" type="button" aria-label="Close schedule">
+                ×
+            </button>
+
+            <div class="schedule-heading">
+                <div class="schedule-symbol">◷</div>
+                <h2 id="scheduleTitle">Schedule</h2>
+                <p>Set when each mood automatically turns on and off.</p>
+            </div>
+
+            <form id="scheduleForm">
+
+                <input type="hidden" id="editingScheduleId">
+
+                <div class="form-section">
+
+                    <label class="form-label" for="moodSelect">
+                        Choose Mood
+                    </label>
+
+                    <select id="moodSelect" class="form-input" required>
+                        <option value="Calm">💜 Calm</option>
+                        <option value="Fresh">🌿 Fresh</option>
+                        <option value="Love">🌹 Love</option>
+                        <option value="Serene">🌊 Serene</option>
+                    </select>
+
+                </div>
+
+                <div class="time-grid">
+
+                    <div class="form-section">
+                        <label class="form-label" for="startTime">
+                            Turn ON
+                        </label>
+
+                        <input
+                            type="time"
+                            id="startTime"
+                            class="form-input"
+                            required>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label" for="endTime">
+                            Turn OFF
+                        </label>
+
+                        <input
+                            type="time"
+                            id="endTime"
+                            class="form-input"
+                            required>
+                    </div>
+
+                </div>
+
+                <div class="form-section">
+
+                    <div class="form-label">
+                        Repeat On
+                    </div>
+
+                    <div class="days-grid">
+
+                        <label class="day-option">
+                            <input type="checkbox" value="1">
+                            <span>Mon</span>
+                        </label>
+
+                        <label class="day-option">
+                            <input type="checkbox" value="2">
+                            <span>Tue</span>
+                        </label>
+
+                        <label class="day-option">
+                            <input type="checkbox" value="3">
+                            <span>Wed</span>
+                        </label>
+
+                        <label class="day-option">
+                            <input type="checkbox" value="4">
+                            <span>Thu</span>
+                        </label>
+
+                        <label class="day-option">
+                            <input type="checkbox" value="5">
+                            <span>Fri</span>
+                        </label>
+
+                        <label class="day-option">
+                            <input type="checkbox" value="6">
+                            <span>Sat</span>
+                        </label>
+
+                        <label class="day-option">
+                            <input type="checkbox" value="0">
+                            <span>Sun</span>
+                        </label>
+
+                    </div>
+
+                    <div class="day-actions">
+                        <button type="button" id="weekdaysButton">
+                            Weekdays
+                        </button>
+
+                        <button type="button" id="everydayButton">
+                            Every Day
+                        </button>
+
+                        <button type="button" id="clearDaysButton">
+                            Clear
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="schedule-form-actions">
+
+                    <button
+                        type="button"
+                        class="cancel-button"
+                        id="cancelEditButton">
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="save-schedule-button"
+                        id="saveScheduleButton">
+                        Add Schedule
+                    </button>
+
+                </div>
+
+            </form>
+
+            <section class="saved-schedules">
+
+                <div class="saved-header">
+                    <div>
+                        <h3>Your Schedules</h3>
+                        <p id="scheduleCount">0 schedules</p>
+                    </div>
+                </div>
+
+                <div id="scheduleList" class="schedule-list"></div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+    <div class="simple-modal" id="simpleModal" hidden>
+
+        <div class="simple-panel about-panel" role="dialog" aria-modal="true" aria-labelledby="simpleTitle">
+
+            <button class="modal-close" id="simpleClose" type="button" aria-label="Close dialog">
+                ×
+            </button>
+
+            <div class="about-header">
+                <div class="about-logo">✨</div>
+                <h2 id="simpleTitle">About Us</h2>
+                <p class="about-subtitle">Who we are and what inspires us.</p>
+            </div>
+
+            <section class="about-section">
+                <h3>🎯 Mission Statement</h3>
+                <p>
+                    Our mission is to create a healthier and more relaxing environment by designing a multi-scent humidifier that lets people choose and enjoy fragrances that suit their mood. We aim to combine technology and wellness in a simple, interactive way.
+                </p>
+            </section>
+
+            <section class="about-section">
+                <h3>📖 Project Background</h3>
+                <p>
+                    This is a BSIT 21005 Project developed by students passionate about innovation and everyday comfort. By blending programming, electronics, and design, we built a humidifier simulation that demonstrates how scents can be controlled digitally to improve atmosphere and well-being.
+                </p>
+            </section>
+
+            <section class="about-section">
+                <h3>👥 Members</h3>
+
+                <div class="members-list">
+                    <div class="member">Almendra, Kc A.</div>
+                    <div class="member">Balunan, Zarah</div>
+                    <div class="member">Cua, Rosejene</div>
+                    <div class="member">Escabusa, Joel Jr.</div>
+                    <div class="member">Hernandez, Nicko Alexandrei</div>
+                    <div class="member">Hilario, Ahrbie V.</div>
+                    <div class="member">Robelles, Rhealyn</div>
+                </div>
+            </section>
+
+            <section class="about-section">
+                <h3>👁️ Vision</h3>
+                <p>
+                    We envision a future where smart humidifiers are seamlessly integrated into homes, offices, and wellness spaces. By connecting scent technology with IoT and smart home systems, our goal is to create personalized environments that adapt to people’s moods, routines, and health needs.
+                </p>
+            </section>
+
+        </div>
+
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
