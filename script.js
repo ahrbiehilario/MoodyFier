@@ -20,19 +20,9 @@ const scheduleList = document.getElementById("scheduleList");
 const scheduleCount = document.getElementById("scheduleCount");
 
 const moodSelect = document.getElementById("moodSelect");
-const startTime = document.getElementById("startTime");
-const endTime = document.getElementById("endTime");
 const editingScheduleId = document.getElementById("editingScheduleId");
 const saveScheduleButton = document.getElementById("saveScheduleButton");
 const cancelEditButton = document.getElementById("cancelEditButton");
-
-const weekdaysButton = document.getElementById("weekdaysButton");
-const everydayButton = document.getElementById("everydayButton");
-const clearDaysButton = document.getElementById("clearDaysButton");
-
-const dayCheckboxes = document.querySelectorAll(
-    ".day-option input[type='checkbox']"
-);
 
 const simpleModal = document.getElementById("simpleModal");
 const simpleClose = document.getElementById("simpleClose");
@@ -40,7 +30,7 @@ const simpleTitle = document.getElementById("simpleTitle");
 const aboutButton = document.getElementById("aboutButton");
 
 const MOOD_STORAGE_KEY = "moodly-moods";
-const SCHEDULE_STORAGE_KEY = "moodly-schedules";
+const SCHEDULE_STORAGE_KEY = "moodly-timers";
 
 let schedules = [];
 
@@ -49,16 +39,6 @@ const moodIcons = {
     Fresh: "🌿",
     Love: "🌹",
     Serene: "🌊"
-};
-
-const dayNames = {
-    0: "Sun",
-    1: "Mon",
-    2: "Tue",
-    3: "Wed",
-    4: "Thu",
-    5: "Fri",
-    6: "Sat"
 };
 
 function showToast(message) {
@@ -154,6 +134,11 @@ switches.forEach((button) => {
     });
 });
 
+
+/* =========================================================
+   BLUETOOTH
+   ========================================================= */
+
 function updateBluetoothView() {
     const isOn = bluetoothState.on;
 
@@ -244,9 +229,11 @@ function renderDevices() {
         const title = document.createElement("strong");
         title.textContent = "No devices found";
 
-        const description = document.createElement("small");
+        const description = document.createElement("span");
         description.textContent =
-            "Scan to search for nearby Bluetooth devices.";
+            bluetoothState.on
+                ? "Scan for nearby Bluetooth devices."
+                : "Turn Bluetooth on to scan for devices.";
 
         empty.append(
             icon,
@@ -260,981 +247,2109 @@ function renderDevices() {
     }
 
     bluetoothState.devices.forEach((device) => {
-        const card = document.createElement("div");
-        card.className = "bluetooth-device";
-
-        const icon = document.createElement("div");
-        icon.className = "device-icon";
-        icon.textContent = "ᛒ";
-
-        const information = document.createElement("div");
-        information.className = "device-info";
-
-        const name = document.createElement("span");
-        name.className = "device-name";
-        name.textContent = device.name;
-
-        const type = document.createElement("span");
-        type.className = "device-type";
-        type.textContent = "Nearby Bluetooth device";
-
-        information.append(
-            name,
-            type
-        );
-
-        card.append(
-            icon,
-            information
-        );
-
-        deviceList.appendChild(card);
-    });
-}
-
-function bluetoothSupported() {
-    return "bluetooth" in navigator;
-}
-
-async function scanForBluetooth() {
-    if (!bluetoothSupported()) {
-        bluetoothState.on = false;
-        updateBluetoothView();
-
-        showToast(
-            "Web Bluetooth is not supported by this browser."
-        );
-
-        return;
-    }
-
-    if (!window.isSecureContext) {
-        showToast(
-            "Bluetooth requires HTTPS or localhost."
-        );
-
-        return;
-    }
-
-    scanBluetooth.disabled = true;
-    turnBluetoothOn.disabled = true;
-    scanBluetooth.textContent = "Searching...";
-
-    try {
-        const device =
-            await navigator.bluetooth.requestDevice({
-                acceptAllDevices: true,
-                optionalServices: []
-            });
-
-        setBluetoothOn();
-
-        addDevice({
-            id: device.id,
-            name: device.name || "Unknown Device"
-        });
-
-        scanBluetooth.textContent = "Scan Again";
-    } catch (error) {
-        if (
-            error &&
-            error.name === "NotFoundError"
-        ) {
-            showToast("No device selected");
-        } else if (
-            error &&
-            error.name === "SecurityError"
-        ) {
-            showToast("Bluetooth permission was blocked");
-        } else {
-            showToast("Bluetooth scan was cancelled");
-        }
-
-        scanBluetooth.textContent = "Scan for Devices";
-    } finally {
-        scanBluetooth.disabled = false;
-        turnBluetoothOn.disabled = false;
-    }
-}
-
-turnBluetoothOn.addEventListener(
-    "click",
-    scanForBluetooth
-);
-
-scanBluetooth.addEventListener(
-    "click",
-    scanForBluetooth
-);
-
-function saveSchedules() {
-    try {
-        localStorage.setItem(
-            SCHEDULE_STORAGE_KEY,
-            JSON.stringify(schedules)
-        );
-    } catch (error) {
-        console.warn(
-            "Schedules could not be saved.",
-            error
-        );
-    }
-}
-
-function loadSchedules() {
-    try {
-        const saved = JSON.parse(
-            localStorage.getItem(
-                SCHEDULE_STORAGE_KEY
-            ) || "[]"
-        );
-
-        if (Array.isArray(saved)) {
-            schedules = saved;
-        }
-    } catch (error) {
-        schedules = [];
-
-        console.warn(
-            "Schedules could not be loaded.",
-            error
-        );
-    }
-
-    renderSchedules();
-}
-
-function getSelectedDays() {
-    return [...dayCheckboxes]
-        .filter((checkbox) => checkbox.checked)
-        .map((checkbox) => Number(checkbox.value));
-}
-
-function setSelectedDays(days) {
-    dayCheckboxes.forEach((checkbox) => {
-        checkbox.checked = days.includes(
-            Number(checkbox.value)
-        );
-    });
-}
-
-function resetScheduleForm() {
-    scheduleForm.reset();
-
-    editingScheduleId.value = "";
-
-    moodSelect.value = "Calm";
-
-    setSelectedDays([]);
-
-    saveScheduleButton.textContent =
-        "Add Schedule";
-
-    cancelEditButton.style.display =
-        "none";
-}
-
-function formatTime(time) {
-    if (!time) {
-        return "";
-    }
-
-    const [hours, minutes] = time.split(":");
-
-    const date = new Date();
-
-    date.setHours(
-        Number(hours),
-        Number(minutes),
-        0,
-        0
-    );
-
-    return date.toLocaleTimeString(
-        [],
-        {
-            hour: "numeric",
-            minute: "2-digit"
-        }
-    );
-}
-
-function formatDays(days) {
-    const sortedDays = [...days].sort(
-        (a, b) => a - b
-    );
-
-    if (sortedDays.length === 7) {
-        return "Every day";
-    }
-
-    if (
-        sortedDays.length === 5 &&
-        [1, 2, 3, 4, 5].every(
-            (day) => sortedDays.includes(day)
-        )
-    ) {
-        return "Weekdays";
-    }
-
-    if (
-        sortedDays.length === 2 &&
-        sortedDays.includes(0) &&
-        sortedDays.includes(6)
-    ) {
-        return "Weekends";
-    }
-
-    return sortedDays
-        .map((day) => dayNames[day])
-        .join(" • ");
-}
-
-function isScheduleActive(
-    schedule,
-    date = new Date()
-) {
-    if (!schedule.enabled) {
-        return false;
-    }
-
-    const day = date.getDay();
-
-    if (!schedule.days.includes(day)) {
-        return false;
-    }
-
-    const currentMinutes =
-        date.getHours() * 60 +
-        date.getMinutes();
-
-    const [startHour, startMinute] =
-        schedule.startTime
-            .split(":")
-            .map(Number);
-
-    const [endHour, endMinute] =
-        schedule.endTime
-            .split(":")
-            .map(Number);
-
-    const startMinutes =
-        startHour * 60 +
-        startMinute;
-
-    const endMinutes =
-        endHour * 60 +
-        endMinute;
-
-    if (startMinutes === endMinutes) {
-        return false;
-    }
-
-    if (startMinutes < endMinutes) {
-        return (
-            currentMinutes >= startMinutes &&
-            currentMinutes < endMinutes
-        );
-    }
-
-    return (
-        currentMinutes >= startMinutes ||
-        currentMinutes < endMinutes
-    );
-}
-
-function scheduleControlsMood(
-    schedule,
-    date = new Date()
-) {
-    if (!schedule.enabled) {
-        return false;
-    }
-
-    const day = date.getDay();
-
-    return schedule.days.includes(day);
-}
-
-function validateSchedule() {
-    const days = getSelectedDays();
-
-    if (days.length === 0) {
-        showToast(
-            "Please choose at least one day."
-        );
-
-        return false;
-    }
-
-    if (!startTime.value || !endTime.value) {
-        showToast(
-            "Please choose an ON and OFF time."
-        );
-
-        return false;
-    }
-
-    if (startTime.value === endTime.value) {
-        showToast(
-            "ON and OFF times cannot be the same."
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function addSchedule(event) {
-    event.preventDefault();
-
-    if (!validateSchedule()) {
-        return;
-    }
-
-    const scheduleData = {
-        mood: moodSelect.value,
-        startTime: startTime.value,
-        endTime: endTime.value,
-        days: getSelectedDays(),
-        enabled: true
-    };
-
-    const editingId =
-        editingScheduleId.value;
-
-    if (editingId) {
-        const index =
-            schedules.findIndex(
-                (schedule) =>
-                    schedule.id === editingId
-            );
-
-        if (index !== -1) {
-            schedules[index] = {
-                ...schedules[index],
-                ...scheduleData
-            };
-
-            showToast(
-                "Schedule updated!"
-            );
-        }
-    } else {
-        schedules.push({
-            id:
-                Date.now().toString() +
-                Math.random()
-                    .toString(16)
-                    .slice(2),
-            ...scheduleData
-        });
-
-        showToast(
-            "Schedule added!"
-        );
-    }
-
-    saveSchedules();
-    renderSchedules();
-    resetScheduleForm();
-    checkSchedules();
-}
-
-function editSchedule(id) {
-    const schedule =
-        schedules.find(
-            (item) => item.id === id
-        );
-
-    if (!schedule) {
-        return;
-    }
-
-    moodSelect.value = schedule.mood;
-    startTime.value = schedule.startTime;
-    endTime.value = schedule.endTime;
-
-    setSelectedDays(schedule.days);
-
-    editingScheduleId.value =
-        schedule.id;
-
-    saveScheduleButton.textContent =
-        "Update Schedule";
-
-    cancelEditButton.style.display =
-        "block";
-
-    scheduleForm.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-}
-
-function deleteSchedule(id) {
-    const schedule =
-        schedules.find(
-            (item) => item.id === id
-        );
-
-    if (!schedule) {
-        return;
-    }
-
-    schedules =
-        schedules.filter(
-            (item) => item.id !== id
-        );
-
-    saveSchedules();
-    renderSchedules();
-    checkSchedules();
-
-    showToast(
-        `${schedule.mood} schedule deleted`
-    );
-
-    if (
-        editingScheduleId.value === id
-    ) {
-        resetScheduleForm();
-    }
-}
-
-function toggleSchedule(id) {
-    const schedule =
-        schedules.find(
-            (item) => item.id === id
-        );
-
-    if (!schedule) {
-        return;
-    }
-
-    schedule.enabled =
-        !schedule.enabled;
-
-    saveSchedules();
-    renderSchedules();
-    checkSchedules();
-
-    showToast(
-        `${schedule.mood} schedule ${
-            schedule.enabled
-                ? "enabled"
-                : "disabled"
-        }`
-    );
-}
-
-function renderSchedules() {
-    scheduleList.innerHTML = "";
-
-    scheduleCount.textContent =
-        `${schedules.length} ${
-            schedules.length === 1
-                ? "schedule"
-                : "schedules"
-        }`;
-
-    if (schedules.length === 0) {
-        const empty =
+        const item =
             document.createElement("div");
 
-        empty.className =
-            "no-schedules";
-
-        empty.innerHTML = `
-            <span class="empty-icon">◷</span>
-            <strong>No schedules yet</strong>
-            <span>Add a schedule above to automate your moods.</span>
-        `;
-
-        scheduleList.appendChild(empty);
-
-        return;
-    }
-
-    schedules.forEach((schedule) => {
-        const card =
-            document.createElement("article");
-
-        card.className =
-            "schedule-card";
-
-        if (!schedule.enabled) {
-            card.classList.add(
-                "disabled"
-            );
-        }
-
-        if (
-            isScheduleActive(schedule)
-        ) {
-            card.classList.add(
-                "active-now"
-            );
-        }
-
-        const top =
-            document.createElement("div");
-
-        top.className =
-            "schedule-top";
-
-        const icon =
-            document.createElement("div");
-
-        icon.className =
-            "schedule-mood-icon";
-
-        icon.textContent =
-            moodIcons[schedule.mood] ||
-            "✨";
+        item.className =
+            "device-item";
 
         const info =
             document.createElement("div");
 
         info.className =
-            "schedule-info";
+            "device-info";
 
-        const moodName =
-            document.createElement("div");
+        const icon =
+            document.createElement("span");
 
-        moodName.className =
-            "schedule-mood-name";
+        icon.className =
+            "device-icon";
 
-        moodName.textContent =
-            schedule.mood;
+        icon.textContent =
+            "⌁";
 
-        const time =
-            document.createElement("div");
+        const name =
+            document.createElement("strong");
 
-        time.className =
-            "schedule-time";
+        name.textContent =
+            device.name;
 
-        time.textContent =
-            `${formatTime(
-                schedule.startTime
-            )} → ${formatTime(
-                schedule.endTime
-            )}`;
+        const id =
+            document.createElement("small");
 
-        const days =
-            document.createElement("div");
-
-        days.className =
-            "schedule-days";
-
-        days.textContent =
-            formatDays(
-                schedule.days
-            );
+        id.textContent =
+            device.id;
 
         info.append(
-            moodName,
-            time,
-            days
-        );
-
-        const actions =
-            document.createElement("div");
-
-        actions.className =
-            "schedule-actions";
-
-        const edit =
-            document.createElement("button");
-
-        edit.className =
-            "schedule-action";
-
-        edit.type = "button";
-        edit.textContent = "✎";
-        edit.title = "Edit schedule";
-
-        edit.setAttribute(
-            "aria-label",
-            `Edit ${schedule.mood} schedule`
-        );
-
-        edit.addEventListener(
-            "click",
-            () => editSchedule(
-                schedule.id
-            )
-        );
-
-        const deleteButton =
-            document.createElement("button");
-
-        deleteButton.className =
-            "schedule-action delete";
-
-        deleteButton.type = "button";
-        deleteButton.textContent = "×";
-        deleteButton.title = "Delete schedule";
-
-        deleteButton.setAttribute(
-            "aria-label",
-            `Delete ${schedule.mood} schedule`
-        );
-
-        deleteButton.addEventListener(
-            "click",
-            () => deleteSchedule(
-                schedule.id
-            )
-        );
-
-        actions.append(
-            edit,
-            deleteButton
-        );
-
-        top.append(
             icon,
-            info,
-            actions
+            name,
+            id
         );
 
-        const status =
-            document.createElement("div");
-
-        status.className =
-            "schedule-status";
-
-        const activeLabel =
-            document.createElement("div");
-
-        activeLabel.className =
-            "active-label";
-
-        if (
-            isScheduleActive(schedule)
-        ) {
-            activeLabel.innerHTML =
-                "<span></span> Running now";
-        } else if (
-            schedule.enabled
-        ) {
-            activeLabel.innerHTML =
-                "<span></span> Scheduled";
-        } else {
-            activeLabel.textContent =
-                "Disabled";
-        }
-
-        const toggle =
+        const connect =
             document.createElement("button");
 
-        toggle.type = "button";
+        connect.type =
+            "button";
 
-        toggle.className =
-            "schedule-toggle";
+        connect.className =
+            "device-connect";
 
-        if (schedule.enabled) {
-            toggle.classList.add(
-                "enabled"
-            );
-        }
+        connect.textContent =
+            "Connect";
 
-        toggle.setAttribute(
-            "aria-label",
-            schedule.enabled
-                ? "Disable schedule"
-                : "Enable schedule"
-        );
-
-        toggle.addEventListener(
+        connect.addEventListener(
             "click",
-            () => toggleSchedule(
-                schedule.id
-            )
+            () => {
+                showToast(
+                    `${device.name} connected`
+                );
+            }
         );
 
-        status.append(
-            activeLabel,
-            toggle
+        item.append(
+            info,
+            connect
         );
 
-        card.append(
-            top,
-            status
-        );
-
-        scheduleList.appendChild(card);
+        deviceList.appendChild(item);
     });
 }
 
-function checkSchedules() {
-    const currentDate = new Date();
+function bluetoothSupported() {
+    return (
+        typeof navigator !== "undefined" &&
+        "bluetooth" in navigator
+    );
+}
 
-    const moodsWithActiveSchedules =
-        new Set();
+async function scanForBluetooth() {
+    if (!bluetoothState.on) {
+        showToast(
+            "Turn Bluetooth on first"
+        );
 
-    schedules.forEach((schedule) => {
-        if (
-            isScheduleActive(
-                schedule,
-                currentDate
-            )
-        ) {
-            moodsWithActiveSchedules.add(
-                schedule.mood
+        return;
+    }
+
+    if (!bluetoothSupported()) {
+        showToast(
+            "Bluetooth scanning is not supported here"
+        );
+
+        return;
+    }
+
+    try {
+        const device =
+            await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true
+            });
+
+        if (device) {
+            addDevice({
+                id:
+                    device.id ||
+                    device.name ||
+                    Date.now().toString(),
+
+                name:
+                    device.name ||
+                    "Bluetooth Device"
+            });
+
+            showToast(
+                "Bluetooth device found"
             );
         }
-    });
-
-    const moodsControlledToday =
-        new Set();
-
-    schedules.forEach((schedule) => {
+    } catch (error) {
         if (
-            scheduleControlsMood(
-                schedule,
-                currentDate
-            )
+            error &&
+            error.name !== "NotFoundError"
         ) {
-            moodsControlledToday.add(
-                schedule.mood
+            console.warn(
+                "Bluetooth scan failed.",
+                error
+            );
+
+            showToast(
+                "Bluetooth scan cancelled"
             );
         }
-    });
+    }
+}
 
-    switches.forEach((button) => {
-        const mood =
-            button.dataset.mood;
+if (turnBluetoothOn) {
+    turnBluetoothOn.addEventListener(
+        "click",
+        setBluetoothOn
+    );
+}
+
+if (scanBluetooth) {
+    scanBluetooth.addEventListener(
+        "click",
+        scanForBluetooth
+    );
+}
+
+
+/* =========================================================
+   TIMER FIELD CREATION
+   ========================================================= */
+
+function ensureTimerFields() {
+
+    let timerHours =
+        document.getElementById("timerHours");
+
+    let timerMinutes =
+        document.getElementById("timerMinutes");
+
+    let timerSeconds =
+        document.getElementById("timerSeconds");
+
+
+    /*
+     * If the newer timer HTML is already being used,
+     * keep it.
+     *
+     * If the old schedule HTML is being used,
+     * convert only the schedule input area.
+     *
+     * The actual schedule modal is NOT modified.
+     * This keeps its original background and design.
+     */
+
+    if (
+        !timerHours ||
+        !timerMinutes ||
+        !timerSeconds
+    ) {
+
+        const oldTimeGrid =
+            scheduleForm?.querySelector(
+                ".time-grid"
+            );
+
+        const oldDaysSection =
+            oldTimeGrid?.parentElement
+                ?.nextElementSibling;
+
+
+        if (oldTimeGrid) {
+
+            oldTimeGrid.innerHTML = `
+
+                <div class="form-section">
+
+                    <label
+                        class="form-label"
+                        for="timerHours"
+                    >
+                        Hours
+                    </label>
+
+                    <input
+                        type="number"
+                        id="timerHours"
+                        class="form-input"
+                        min="0"
+                        max="99"
+                        value="0"
+                        inputmode="numeric">
+
+                </div>
+
+
+                <div class="form-section">
+
+                    <label
+                        class="form-label"
+                        for="timerMinutes"
+                    >
+                        Minutes
+                    </label>
+
+                    <input
+                        type="number"
+                        id="timerMinutes"
+                        class="form-input"
+                        min="0"
+                        max="59"
+                        value="0"
+                        inputmode="numeric">
+
+                </div>
+
+
+                <div class="form-section">
+
+                    <label
+                        class="form-label"
+                        for="timerSeconds"
+                    >
+                        Seconds
+                    </label>
+
+                    <input
+                        type="number"
+                        id="timerSeconds"
+                        class="form-input"
+                        min="0"
+                        max="59"
+                        value="0"
+                        inputmode="numeric">
+
+                </div>
+
+            `;
+
+            oldTimeGrid.classList.add(
+                "timer-duration-grid"
+            );
+
+            oldTimeGrid.style.gridTemplateColumns =
+                "repeat(3, 1fr)";
+
+            oldTimeGrid.style.gap =
+                "12px";
+        }
+
 
         if (
-            moodsControlledToday.has(mood)
+            oldDaysSection &&
+            oldDaysSection !== oldTimeGrid
         ) {
-            const shouldBeOn =
-                moodsWithActiveSchedules.has(
-                    mood
+
+            const label =
+                oldDaysSection.querySelector(
+                    ".form-label"
                 );
 
-            button.setAttribute(
-                "aria-checked",
-                String(shouldBeOn)
-            );
+            const daysGrid =
+                oldDaysSection.querySelector(
+                    ".days-grid"
+                );
+
+            const dayActions =
+                oldDaysSection.querySelector(
+                    ".day-actions"
+                );
+
+
+            if (label) {
+                label.textContent =
+                    "Timer Duration";
+            }
+
+
+            if (daysGrid) {
+                daysGrid.remove();
+            }
+
+
+            if (dayActions) {
+                dayActions.remove();
+            }
+
+
+            if (
+                !oldDaysSection.querySelector(
+                    ".timer-hint"
+                )
+            ) {
+
+                const hint =
+                    document.createElement(
+                        "div"
+                    );
+
+                hint.className =
+                    "timer-hint";
+
+                hint.textContent =
+                    "The selected mood turns on when the timer starts and turns off when the timer reaches zero.";
+
+                oldDaysSection.appendChild(
+                    hint
+                );
+            }
         }
-    });
+    }
+
+
+    timerHours =
+        document.getElementById(
+            "timerHours"
+        );
+
+    timerMinutes =
+        document.getElementById(
+            "timerMinutes"
+        );
+
+    timerSeconds =
+        document.getElementById(
+            "timerSeconds"
+        );
+
+
+    return {
+        timerHours,
+        timerMinutes,
+        timerSeconds
+    };
+}
+
+const timerFields =
+    ensureTimerFields();
+
+const timerHours =
+    timerFields.timerHours;
+
+const timerMinutes =
+    timerFields.timerMinutes;
+
+const timerSeconds =
+    timerFields.timerSeconds;
+
+
+/* =========================================================
+   TIMER MODAL TEXT
+   ========================================================= */
+
+if (scheduleModal) {
+
+    const scheduleTitle =
+        scheduleModal.querySelector(
+            "#scheduleTitle"
+        );
+
+    const scheduleSubtitle =
+        scheduleModal.querySelector(
+            ".schedule-heading p"
+        );
+
+    const savedTitle =
+        scheduleModal.querySelector(
+            ".saved-header h3"
+        );
+
+    const savedSubtitle =
+        scheduleModal.querySelector(
+            ".saved-header p"
+        );
+
+
+    if (scheduleTitle) {
+        scheduleTitle.textContent =
+            "Timer";
+    }
+
+
+    if (scheduleSubtitle) {
+        scheduleSubtitle.textContent =
+            "Set a countdown and let your chosen mood run automatically.";
+    }
+
+
+    if (savedTitle) {
+        savedTitle.textContent =
+            "Your Timers";
+    }
+
+
+    if (savedSubtitle) {
+        savedSubtitle.textContent =
+            "Manage your countdown timers.";
+    }
+
+
+    if (
+        saveScheduleButton &&
+        !editingScheduleId.value
+    ) {
+
+        saveScheduleButton.textContent =
+            "Start Timer";
+    }
+}
+
+
+/* =========================================================
+   TIMER STORAGE
+   ========================================================= */
+
+function saveSchedules() {
+
+    try {
+
+        localStorage.setItem(
+            SCHEDULE_STORAGE_KEY,
+            JSON.stringify(schedules)
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Timers could not be saved.",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   LOAD TIMERS
+   ========================================================= */
+
+function loadSchedules() {
+
+    try {
+
+        const saved =
+            JSON.parse(
+                localStorage.getItem(
+                    SCHEDULE_STORAGE_KEY
+                ) || "[]"
+            );
+
+
+        if (Array.isArray(saved)) {
+
+            schedules =
+                saved.map((timer) => {
+
+                    const durationMs =
+                        Number(
+                            timer.durationMs
+                        ) || 0;
+
+
+                    let remainingMs =
+                        Number(
+                            timer.remainingMs
+                        );
+
+
+                    if (
+                        !Number.isFinite(
+                            remainingMs
+                        )
+                    ) {
+
+                        remainingMs =
+                            durationMs;
+                    }
+
+
+                    let running =
+                        Boolean(
+                            timer.running
+                        );
+
+
+                    if (
+                        running &&
+                        timer.endAt
+                    ) {
+
+                        remainingMs =
+                            Math.max(
+                                0,
+                                Number(
+                                    timer.endAt
+                                ) -
+                                Date.now()
+                            );
+
+
+                        if (
+                            remainingMs <= 0
+                        ) {
+
+                            running =
+                                false;
+                        }
+                    }
+
+
+                    return {
+
+                        id:
+                            timer.id ||
+                            Date.now()
+                                .toString() +
+                            Math.random()
+                                .toString(16)
+                                .slice(2),
+
+                        mood:
+                            timer.mood ||
+                            "Calm",
+
+                        durationMs,
+
+                        remainingMs,
+
+                        endAt:
+                            running
+                                ? Date.now() +
+                                  remainingMs
+                                : null,
+
+                        running
+                    };
+
+                });
+        }
+
+    } catch (error) {
+
+        schedules = [];
+
+        console.warn(
+            "Timers could not be loaded.",
+            error
+        );
+    }
+
+
+    saveSchedules();
 
     renderSchedules();
 }
 
-function openSchedule() {
-    scheduleModal.hidden = false;
 
-    requestAnimationFrame(() => {
-        scheduleClose.focus();
-    });
+/* =========================================================
+   GET TIMER DURATION
+   ========================================================= */
+
+function getDurationMs() {
+
+    const hours =
+        Math.max(
+            0,
+            parseInt(
+                timerHours?.value || "0",
+                10
+            ) || 0
+        );
+
+
+    const minutes =
+        Math.max(
+            0,
+            parseInt(
+                timerMinutes?.value || "0",
+                10
+            ) || 0
+        );
+
+
+    const seconds =
+        Math.max(
+            0,
+            parseInt(
+                timerSeconds?.value || "0",
+                10
+            ) || 0
+        );
+
+
+    return (
+        hours * 3600000 +
+        minutes * 60000 +
+        seconds * 1000
+    );
 }
 
+
+/* =========================================================
+   SET TIMER INPUTS
+   ========================================================= */
+
+function setDurationInputs(
+    milliseconds
+) {
+
+    const totalSeconds =
+        Math.max(
+            0,
+            Math.floor(
+                milliseconds / 1000
+            )
+        );
+
+
+    const hours =
+        Math.floor(
+            totalSeconds / 3600
+        );
+
+
+    const minutes =
+        Math.floor(
+            (totalSeconds % 3600) / 60
+        );
+
+
+    const seconds =
+        totalSeconds % 60;
+
+
+    if (timerHours) {
+        timerHours.value =
+            String(hours);
+    }
+
+
+    if (timerMinutes) {
+        timerMinutes.value =
+            String(minutes);
+    }
+
+
+    if (timerSeconds) {
+        timerSeconds.value =
+            String(seconds);
+    }
+}
+
+
+/* =========================================================
+   RESET TIMER FORM
+   ========================================================= */
+
+function resetScheduleForm() {
+
+    scheduleForm.reset();
+
+    editingScheduleId.value =
+        "";
+
+    moodSelect.value =
+        "Calm";
+
+    setDurationInputs(0);
+
+    saveScheduleButton.textContent =
+        "Start Timer";
+
+    cancelEditButton.style.display =
+        "none";
+}
+
+
+/* =========================================================
+   FORMAT TIMER
+   ========================================================= */
+
+function formatDuration(
+    milliseconds
+) {
+
+    let totalSeconds =
+        Math.max(
+            0,
+            Math.ceil(
+                milliseconds / 1000
+            )
+        );
+
+
+    const hours =
+        Math.floor(
+            totalSeconds / 3600
+        );
+
+
+    totalSeconds %=
+        3600;
+
+
+    const minutes =
+        Math.floor(
+            totalSeconds / 60
+        );
+
+
+    const seconds =
+        totalSeconds % 60;
+
+
+    return (
+
+        String(hours)
+            .padStart(2, "0") +
+
+        ":" +
+
+        String(minutes)
+            .padStart(2, "0") +
+
+        ":" +
+
+        String(seconds)
+            .padStart(2, "0")
+    );
+}
+
+
+/* =========================================================
+   FORMAT HUMAN TIMER
+   ========================================================= */
+
+function formatDurationLabel(
+    milliseconds
+) {
+
+    let totalSeconds =
+        Math.max(
+            0,
+            Math.floor(
+                milliseconds / 1000
+            )
+        );
+
+
+    const hours =
+        Math.floor(
+            totalSeconds / 3600
+        );
+
+
+    totalSeconds %=
+        3600;
+
+
+    const minutes =
+        Math.floor(
+            totalSeconds / 60
+        );
+
+
+    const seconds =
+        totalSeconds % 60;
+
+
+    const parts = [];
+
+
+    if (hours > 0) {
+
+        parts.push(
+            `${hours} ${
+                hours === 1
+                    ? "hour"
+                    : "hours"
+            }`
+        );
+    }
+
+
+    if (minutes > 0) {
+
+        parts.push(
+            `${minutes} ${
+                minutes === 1
+                    ? "minute"
+                    : "minutes"
+            }`
+        );
+    }
+
+
+    if (seconds > 0) {
+
+        parts.push(
+            `${seconds} ${
+                seconds === 1
+                    ? "second"
+                    : "seconds"
+            }`
+        );
+    }
+
+
+    return parts.length
+        ? parts.join(" ")
+        : "0 seconds";
+}
+
+
+/* =========================================================
+   GET REMAINING TIMER
+   ========================================================= */
+
+function getTimerRemaining(
+    timer
+) {
+
+    if (!timer.running) {
+
+        return Math.max(
+            0,
+            Number(
+                timer.remainingMs
+            ) || 0
+        );
+    }
+
+
+    return Math.max(
+        0,
+        Number(
+            timer.endAt
+        ) -
+        Date.now()
+    );
+}
+
+
+/* =========================================================
+   VALIDATE TIMER
+   ========================================================= */
+
+function validateSchedule() {
+
+    if (
+        getDurationMs() <= 0
+    ) {
+
+        showToast(
+            "Please set a timer longer than 0 seconds."
+        );
+
+        return false;
+    }
+
+
+    return true;
+}
+
+
+/* =========================================================
+   ADD / UPDATE TIMER
+   ========================================================= */
+
+function addSchedule(
+    event
+) {
+
+    event.preventDefault();
+
+
+    if (!validateSchedule()) {
+        return;
+    }
+
+
+    const durationMs =
+        getDurationMs();
+
+
+    const mood =
+        moodSelect.value;
+
+
+    const editingId =
+        editingScheduleId.value;
+
+
+    if (editingId) {
+
+        const index =
+            schedules.findIndex(
+                (schedule) =>
+                    schedule.id ===
+                    editingId
+            );
+
+
+        if (index !== -1) {
+
+            const oldMood =
+                schedules[index].mood;
+
+
+            setMood(
+                oldMood,
+                false,
+                false
+            );
+
+
+            schedules[index] = {
+
+                ...schedules[index],
+
+                mood,
+
+                durationMs,
+
+                remainingMs:
+                    durationMs,
+
+                endAt:
+                    Date.now() +
+                    durationMs,
+
+                running:
+                    true
+            };
+
+
+            setMood(
+                mood,
+                true,
+                true
+            );
+
+
+            showToast(
+                "Timer updated!"
+            );
+        }
+
+    } else {
+
+        schedules.push({
+
+            id:
+                Date.now()
+                    .toString() +
+                Math.random()
+                    .toString(16)
+                    .slice(2),
+
+            mood,
+
+            durationMs,
+
+            remainingMs:
+                durationMs,
+
+            endAt:
+                Date.now() +
+                durationMs,
+
+            running:
+                true
+        });
+
+
+        setMood(
+            mood,
+            true,
+            true
+        );
+
+
+        showToast(
+            "Timer started!"
+        );
+    }
+
+
+    saveSchedules();
+
+    renderSchedules();
+
+    resetScheduleForm();
+}
+
+
+/* =========================================================
+   EDIT TIMER
+   ========================================================= */
+
+function editSchedule(
+    id
+) {
+
+    const timer =
+        schedules.find(
+            (item) =>
+                item.id === id
+        );
+
+
+    if (!timer) {
+        return;
+    }
+
+
+    if (timer.running) {
+
+        timer.remainingMs =
+            Math.max(
+                0,
+                timer.endAt -
+                Date.now()
+            );
+
+
+        timer.running =
+            false;
+
+        timer.endAt =
+            null;
+
+
+        setMood(
+            timer.mood,
+            false,
+            false
+        );
+
+
+        saveSchedules();
+    }
+
+
+    moodSelect.value =
+        timer.mood;
+
+
+    setDurationInputs(
+        timer.remainingMs
+    );
+
+
+    editingScheduleId.value =
+        timer.id;
+
+
+    saveScheduleButton.textContent =
+        "Update Timer";
+
+
+    cancelEditButton.style.display =
+        "block";
+
+
+    scheduleForm.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+
+    renderSchedules();
+}
+
+
+/* =========================================================
+   DELETE TIMER
+   ========================================================= */
+
+function deleteSchedule(
+    id
+) {
+
+    const timer =
+        schedules.find(
+            (item) =>
+                item.id === id
+        );
+
+
+    if (!timer) {
+        return;
+    }
+
+
+    if (timer.running) {
+
+        setMood(
+            timer.mood,
+            false,
+            false
+        );
+    }
+
+
+    schedules =
+        schedules.filter(
+            (item) =>
+                item.id !== id
+        );
+
+
+    saveSchedules();
+
+    renderSchedules();
+
+
+    showToast(
+        `${timer.mood} timer deleted`
+    );
+
+
+    if (
+        editingScheduleId.value === id
+    ) {
+
+        resetScheduleForm();
+    }
+}
+
+
+/* =========================================================
+   PAUSE / RESUME TIMER
+   ========================================================= */
+
+function toggleSchedule(
+    id
+) {
+
+    const timer =
+        schedules.find(
+            (item) =>
+                item.id === id
+        );
+
+
+    if (!timer) {
+        return;
+    }
+
+
+    if (timer.running) {
+
+        timer.remainingMs =
+            Math.max(
+                0,
+                timer.endAt -
+                Date.now()
+            );
+
+
+        timer.running =
+            false;
+
+        timer.endAt =
+            null;
+
+
+        setMood(
+            timer.mood,
+            false,
+            false
+        );
+
+
+        showToast(
+            "Timer paused"
+        );
+
+    } else {
+
+        if (
+            timer.remainingMs <= 0
+        ) {
+
+            showToast(
+                "Timer finished. Press Reset to use it again."
+            );
+
+            return;
+        }
+
+
+        timer.running =
+            true;
+
+
+        timer.endAt =
+            Date.now() +
+            timer.remainingMs;
+
+
+        setMood(
+            timer.mood,
+            true,
+            false
+        );
+
+
+        showToast(
+            "Timer resumed"
+        );
+    }
+
+
+    saveSchedules();
+
+    renderSchedules();
+}
+
+
+/* =========================================================
+   RESET TIMER
+   ========================================================= */
+
+function resetTimer(
+    id
+) {
+
+    const timer =
+        schedules.find(
+            (item) =>
+                item.id === id
+        );
+
+
+    if (!timer) {
+        return;
+    }
+
+
+    setMood(
+        timer.mood,
+        false,
+        false
+    );
+
+
+    timer.remainingMs =
+        timer.durationMs;
+
+
+    timer.endAt =
+        null;
+
+
+    timer.running =
+        false;
+
+
+    saveSchedules();
+
+    renderSchedules();
+
+
+    showToast(
+        "Timer reset"
+    );
+}
+
+
+/* =========================================================
+   RENDER TIMERS
+   ========================================================= */
+
+function renderSchedules() {
+
+    scheduleList.innerHTML =
+        "";
+
+
+    scheduleCount.textContent =
+        `${schedules.length} ${
+            schedules.length === 1
+                ? "timer"
+                : "timers"
+        }`;
+
+
+    if (
+        schedules.length === 0
+    ) {
+
+        const empty =
+            document.createElement(
+                "div"
+            );
+
+
+        empty.className =
+            "no-schedules";
+
+
+        empty.innerHTML = `
+
+            <span class="empty-icon">
+                ◷
+            </span>
+
+            <strong>
+                No timers yet
+            </strong>
+
+            <span>
+                Add a timer above to automate your moods.
+            </span>
+
+        `;
+
+
+        scheduleList.appendChild(
+            empty
+        );
+
+
+        return;
+    }
+
+
+    schedules.forEach(
+        (timer) => {
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+
+            card.className =
+                "schedule-card";
+
+
+            if (!timer.running) {
+
+                card.classList.add(
+                    "disabled"
+                );
+            }
+
+
+            if (
+                timer.running &&
+                getTimerRemaining(
+                    timer
+                ) > 0
+            ) {
+
+                card.classList.add(
+                    "active-now"
+                );
+            }
+
+
+            const top =
+                document.createElement(
+                    "div"
+                );
+
+
+            top.className =
+                "schedule-top";
+
+
+            const icon =
+                document.createElement(
+                    "div"
+                );
+
+
+            icon.className =
+                "schedule-mood-icon";
+
+
+            icon.textContent =
+                moodIcons[
+                    timer.mood
+                ] || "✨";
+
+
+            const info =
+                document.createElement(
+                    "div"
+                );
+
+
+            info.className =
+                "schedule-info";
+
+
+            const moodName =
+                document.createElement(
+                    "div"
+                );
+
+
+            moodName.className =
+                "schedule-mood-name";
+
+
+            moodName.textContent =
+                timer.mood;
+
+
+            const time =
+                document.createElement(
+                    "div"
+                );
+
+
+            time.className =
+                "schedule-time";
+
+
+            time.textContent =
+                formatDuration(
+                    getTimerRemaining(
+                        timer
+                    )
+                );
+
+
+            const days =
+                document.createElement(
+                    "div"
+                );
+
+
+            days.className =
+                "schedule-days";
+
+
+            days.textContent =
+                timer.running
+                    ? "Running"
+                    : timer.remainingMs <= 0
+                        ? "Finished"
+                        : "Paused";
+
+
+            info.append(
+                moodName,
+                time,
+                days
+            );
+
+
+            const actions =
+                document.createElement(
+                    "div"
+                );
+
+
+            actions.className =
+                "schedule-actions";
+
+
+            const edit =
+                document.createElement(
+                    "button"
+                );
+
+
+            edit.className =
+                "schedule-action";
+
+
+            edit.type =
+                "button";
+
+
+            edit.textContent =
+                "✎";
+
+
+            edit.title =
+                "Edit timer";
+
+
+            edit.setAttribute(
+                "aria-label",
+                `Edit ${timer.mood} timer`
+            );
+
+
+            edit.addEventListener(
+                "click",
+                () =>
+                    editSchedule(
+                        timer.id
+                    )
+            );
+
+
+            const deleteButton =
+                document.createElement(
+                    "button"
+                );
+
+
+            deleteButton.className =
+                "schedule-action delete";
+
+
+            deleteButton.type =
+                "button";
+
+
+            deleteButton.textContent =
+                "×";
+
+
+            deleteButton.title =
+                "Delete timer";
+
+
+            deleteButton.setAttribute(
+                "aria-label",
+                `Delete ${timer.mood} timer`
+            );
+
+
+            deleteButton.addEventListener(
+                "click",
+                () =>
+                    deleteSchedule(
+                        timer.id
+                    )
+            );
+
+
+            actions.append(
+                edit,
+                deleteButton
+            );
+
+
+            top.append(
+                icon,
+                info,
+                actions
+            );
+
+
+            const status =
+                document.createElement(
+                    "div"
+                );
+
+
+            status.className =
+                "schedule-status";
+
+
+            const activeLabel =
+                document.createElement(
+                    "div"
+                );
+
+
+            activeLabel.className =
+                "active-label";
+
+
+            if (
+                timer.running &&
+                getTimerRemaining(
+                    timer
+                ) > 0
+            ) {
+
+                activeLabel.innerHTML =
+                    "<span></span> Running";
+
+            } else if (
+                timer.remainingMs <= 0
+            ) {
+
+                activeLabel.textContent =
+                    "Finished";
+
+            } else {
+
+                activeLabel.textContent =
+                    "Paused";
+            }
+
+
+            const toggle =
+                document.createElement(
+                    "button"
+                );
+
+
+            toggle.type =
+                "button";
+
+
+            toggle.className =
+                "schedule-toggle";
+
+
+            if (timer.running) {
+
+                toggle.classList.add(
+                    "enabled"
+                );
+            }
+
+
+            toggle.setAttribute(
+                "aria-label",
+                timer.running
+                    ? "Pause timer"
+                    : "Resume timer"
+            );
+
+
+            toggle.addEventListener(
+                "click",
+                () =>
+                    toggleSchedule(
+                        timer.id
+                    )
+            );
+
+
+            const reset =
+                document.createElement(
+                    "button"
+                );
+
+
+            reset.type =
+                "button";
+
+
+            reset.className =
+                "schedule-action";
+
+
+            reset.textContent =
+                "↻";
+
+
+            reset.title =
+                "Reset timer";
+
+
+            reset.setAttribute(
+                "aria-label",
+                "Reset timer"
+            );
+
+
+            reset.addEventListener(
+                "click",
+                () =>
+                    resetTimer(
+                        timer.id
+                    )
+            );
+
+
+            status.append(
+                activeLabel,
+                toggle,
+                reset
+            );
+
+
+            card.append(
+                top,
+                status
+            );
+
+
+            scheduleList.appendChild(
+                card
+            );
+
+        }
+    );
+}
+
+
+/* =========================================================
+   CHECK TIMERS
+   ========================================================= */
+
+function checkSchedules() {
+
+    let changed =
+        false;
+
+
+    schedules.forEach(
+        (timer) => {
+
+            if (!timer.running) {
+                return;
+            }
+
+
+            const remaining =
+                timer.endAt -
+                Date.now();
+
+
+            if (
+                remaining <= 0
+            ) {
+
+                timer.remainingMs =
+                    0;
+
+
+                timer.endAt =
+                    null;
+
+
+                timer.running =
+                    false;
+
+
+                setMood(
+                    timer.mood,
+                    false,
+                    false
+                );
+
+
+                showToast(
+                    `${timer.mood} timer finished`
+                );
+
+
+                changed =
+                    true;
+
+            } else {
+
+                timer.remainingMs =
+                    remaining;
+
+
+                /*
+                 * Keep the selected mood ON
+                 * while the timer is running.
+                 */
+
+                setMood(
+                    timer.mood,
+                    true,
+                    false
+                );
+
+
+                changed =
+                    true;
+            }
+
+        }
+    );
+
+
+    if (changed) {
+
+        saveSchedules();
+    }
+
+
+    renderSchedules();
+}
+
+
+/* =========================================================
+   OPEN SCHEDULE
+   ========================================================= */
+
+function openSchedule() {
+
+    /*
+     * IMPORTANT:
+     * We only use the original hidden property.
+     * No "active" class is added.
+     *
+     * This keeps the original schedule modal
+     * background completely intact.
+     */
+
+    scheduleModal.hidden =
+        false;
+
+
+    requestAnimationFrame(
+        () => {
+            scheduleClose.focus();
+        }
+    );
+}
+
+
+/* =========================================================
+   CLOSE SCHEDULE
+   ========================================================= */
+
 function closeSchedule() {
-    scheduleModal.hidden = true;
+
+    scheduleModal.hidden =
+        true;
+
 
     resetScheduleForm();
 
+
     scheduleButton.focus();
 }
+
+
+/* =========================================================
+   SCHEDULE BUTTON
+   ========================================================= */
 
 scheduleButton.addEventListener(
     "click",
     openSchedule
 );
 
+
 scheduleClose.addEventListener(
     "click",
     closeSchedule
 );
 
+
 scheduleModal.addEventListener(
     "click",
     (event) => {
+
         if (
-            event.target === scheduleModal
+            event.target ===
+            scheduleModal
         ) {
+
             closeSchedule();
         }
     }
 );
+
+
+/* =========================================================
+   TIMER FORM
+   ========================================================= */
 
 scheduleForm.addEventListener(
     "submit",
     addSchedule
 );
 
+
 cancelEditButton.addEventListener(
     "click",
     resetScheduleForm
 );
 
-weekdaysButton.addEventListener(
-    "click",
-    () => {
-        setSelectedDays([
-            1,
-            2,
-            3,
-            4,
-            5
-        ]);
-    }
-);
 
-everydayButton.addEventListener(
-    "click",
-    () => {
-        setSelectedDays([
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6
-        ]);
-    }
-);
+/* =========================================================
+   TIMER INPUT VALIDATION
+   ========================================================= */
 
-clearDaysButton.addEventListener(
-    "click",
-    () => {
-        setSelectedDays([]);
-    }
-);
+function normalizeTimerInput(
+    input,
+    max
+) {
 
-function openTimePicker(input) {
-    if (
-        input &&
-        typeof input.showPicker === "function"
-    ) {
-        try {
-            input.showPicker();
-        } catch (error) {
-            input.focus();
+    if (!input) {
+        return;
+    }
+
+
+    input.addEventListener(
+        "input",
+        () => {
+
+            let value =
+                parseInt(
+                    input.value,
+                    10
+                );
+
+
+            if (
+                !Number.isFinite(
+                    value
+                )
+            ) {
+
+                value =
+                    0;
+            }
+
+
+            value =
+                Math.max(
+                    0,
+                    Math.min(
+                        max,
+                        value
+                    )
+                );
+
+
+            input.value =
+                String(value);
         }
-    } else if (input) {
-        input.focus();
-    }
+    );
 }
 
-startTime.addEventListener(
-    "click",
-    () => {
-        openTimePicker(startTime);
-    }
+
+normalizeTimerInput(
+    timerHours,
+    99
 );
 
-endTime.addEventListener(
-    "click",
-    () => {
-        openTimePicker(endTime);
-    }
+
+normalizeTimerInput(
+    timerMinutes,
+    59
 );
 
-startTime.addEventListener(
-    "mousedown",
-    () => {
-        openTimePicker(startTime);
-    }
+
+normalizeTimerInput(
+    timerSeconds,
+    59
 );
 
-endTime.addEventListener(
-    "mousedown",
-    () => {
-        openTimePicker(endTime);
-    }
-);
+
+/* =========================================================
+   ABOUT US
+   ========================================================= */
 
 aboutButton.addEventListener(
     "click",
     () => {
+
         simpleTitle.textContent =
             "About Us";
+
 
         const aboutSections =
             simpleModal.querySelectorAll(
                 ".about-section"
             );
 
+
         aboutSections.forEach(
             (section) => {
-                section.style.display = "";
+
+                section.style.display =
+                    "";
             }
         );
+
 
         const subtitle =
             simpleModal.querySelector(
                 ".about-subtitle"
             );
 
+
         subtitle.textContent =
             "Who we are and what inspires us.";
 
-        simpleModal.hidden = false;
 
-        requestAnimationFrame(() => {
-            simpleClose.focus();
-        });
+        simpleModal.hidden =
+            false;
+
+
+        requestAnimationFrame(
+            () => {
+
+                simpleClose.focus();
+            }
+        );
     }
 );
 
+
 function closeSimpleModal() {
-    simpleModal.hidden = true;
+
+    simpleModal.hidden =
+        true;
 }
+
 
 simpleClose.addEventListener(
     "click",
     closeSimpleModal
 );
 
+
 simpleModal.addEventListener(
     "click",
     (event) => {
+
         if (
-            event.target === simpleModal
+            event.target ===
+            simpleModal
         ) {
+
             closeSimpleModal();
         }
     }
 );
+
+
+/* =========================================================
+   ESCAPE KEY
+   ========================================================= */
 
 document.addEventListener(
     "keydown",
     (event) => {
-        if (event.key !== "Escape") {
+
+        if (
+            event.key !==
+            "Escape"
+        ) {
+
             return;
         }
+
 
         if (
             !bluetoothOverlay.hidden
         ) {
+
             closeBluetooth();
         }
+
 
         if (
             !scheduleModal.hidden
         ) {
+
             closeSchedule();
         }
+
 
         if (
             !simpleModal.hidden
         ) {
+
             closeSimpleModal();
         }
     }
 );
 
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
 loadMoodState();
+
 loadSchedules();
+
 renderDevices();
+
 checkSchedules();
+
+
+/* =========================================================
+   TIMER CHECK
+   ========================================================= */
 
 setInterval(
     checkSchedules,
