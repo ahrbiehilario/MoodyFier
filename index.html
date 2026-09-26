@@ -197,8 +197,8 @@
 
             <div class="schedule-heading">
                 <div class="schedule-symbol">◷</div>
-                <h2 id="scheduleTitle">Schedule</h2>
-                <p>Set when each mood automatically turns on and off.</p>
+                <h2 id="scheduleTitle">Timer</h2>
+                <p>Set a countdown and let your chosen mood run automatically.</p>
             </div>
 
             <form id="scheduleForm">
@@ -220,91 +220,57 @@
 
                 </div>
 
-                <div class="time-grid">
-
-                    <div class="form-section">
-                        <label class="form-label" for="startTime">
-                            Turn ON
-                        </label>
-
-                        <input
-                            type="time"
-                            id="startTime"
-                            class="form-input"
-                            required>
-                    </div>
-
-                    <div class="form-section">
-                        <label class="form-label" for="endTime">
-                            Turn OFF
-                        </label>
-
-                        <input
-                            type="time"
-                            id="endTime"
-                            class="form-input"
-                            required>
-                    </div>
-
-                </div>
-
                 <div class="form-section">
 
                     <div class="form-label">
-                        Repeat On
+                        Timer Duration
                     </div>
 
-                    <div class="days-grid">
+                    <div class="duration-grid">
 
-                        <label class="day-option">
-                            <input type="checkbox" value="1">
-                            <span>Mon</span>
-                        </label>
+                        <div class="duration-input">
+                            <input
+                                type="number"
+                                id="timerHours"
+                                class="form-input"
+                                min="0"
+                                max="99"
+                                value="0"
+                                inputmode="numeric"
+                                aria-label="Hours">
+                            <span>Hours</span>
+                        </div>
 
-                        <label class="day-option">
-                            <input type="checkbox" value="2">
-                            <span>Tue</span>
-                        </label>
+                        <div class="duration-input">
+                            <input
+                                type="number"
+                                id="timerMinutes"
+                                class="form-input"
+                                min="0"
+                                max="59"
+                                value="5"
+                                inputmode="numeric"
+                                aria-label="Minutes">
+                            <span>Minutes</span>
+                        </div>
 
-                        <label class="day-option">
-                            <input type="checkbox" value="3">
-                            <span>Wed</span>
-                        </label>
-
-                        <label class="day-option">
-                            <input type="checkbox" value="4">
-                            <span>Thu</span>
-                        </label>
-
-                        <label class="day-option">
-                            <input type="checkbox" value="5">
-                            <span>Fri</span>
-                        </label>
-
-                        <label class="day-option">
-                            <input type="checkbox" value="6">
-                            <span>Sat</span>
-                        </label>
-
-                        <label class="day-option">
-                            <input type="checkbox" value="0">
-                            <span>Sun</span>
-                        </label>
+                        <div class="duration-input">
+                            <input
+                                type="number"
+                                id="timerSeconds"
+                                class="form-input"
+                                min="0"
+                                max="59"
+                                value="0"
+                                inputmode="numeric"
+                                aria-label="Seconds">
+                            <span>Seconds</span>
+                        </div>
 
                     </div>
 
-                    <div class="day-actions">
-                        <button type="button" id="weekdaysButton">
-                            Weekdays
-                        </button>
-
-                        <button type="button" id="everydayButton">
-                            Every Day
-                        </button>
-
-                        <button type="button" id="clearDaysButton">
-                            Clear
-                        </button>
+                    <div class="timer-hint">
+                        The mood will turn on when the timer starts and turn off when it reaches zero.
                     </div>
 
                 </div>
@@ -322,7 +288,7 @@
                         type="submit"
                         class="save-schedule-button"
                         id="saveScheduleButton">
-                        Add Schedule
+                        Start Timer
                     </button>
 
                 </div>
@@ -333,8 +299,8 @@
 
                 <div class="saved-header">
                     <div>
-                        <h3>Your Schedules</h3>
-                        <p id="scheduleCount">0 schedules</p>
+                        <h3>Your Timers</h3>
+                        <p id="scheduleCount">0 timers</p>
                     </div>
                 </div>
 
