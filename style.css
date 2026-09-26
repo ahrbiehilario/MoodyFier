@@ -538,69 +538,40 @@ select:focus-visible {
     font-weight: 700;
 }
 
-.time-grid {
+.duration-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
 }
 
-.days-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
+.duration-input {
+    min-width: 0;
 }
 
-.day-option {
-    position: relative;
-    cursor: pointer;
+.duration-input .form-input {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 900;
 }
 
-.day-option input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.day-option span {
-    min-height: 42px;
-    display: grid;
-    place-items: center;
-    padding: 5px 2px;
-    border-radius: 11px;
-    background: rgba(255, 255, 255, 0.6);
-    color: #704b76;
-    font-size: 11px;
-    font-weight: 800;
-    border: 1px solid transparent;
-    transition: 0.18s ease;
-}
-
-.day-option input:checked + span {
-    background: var(--pink);
-    border-color: var(--pink-dark);
-    color: white;
-    transform: translateY(-1px);
-}
-
-.day-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: 7px;
-}
-
-.day-actions button {
-    flex: 1;
-    min-height: 32px;
-    border: 0;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.5);
-    color: var(--purple);
-    font-size: 11px;
+.duration-input span {
+    display: block;
+    margin-top: 5px;
+    text-align: center;
+    color: #79557f;
+    font-size: 10px;
     font-weight: 800;
 }
 
-.day-actions button:hover {
-    background: rgba(255, 255, 255, 0.8);
+.timer-hint {
+    margin-top: 8px;
+    padding: 9px 11px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.38);
+    color: #79557f;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
 }
 
 .schedule-form-actions {
@@ -697,12 +668,12 @@ select:focus-visible {
     transition: 0.2s ease;
 }
 
-.schedule-card.disabled {
-    opacity: 0.55;
-}
-
 .schedule-card.active-now {
     box-shadow: 0 0 0 2px rgba(143, 205, 176, 0.75);
+}
+
+.schedule-card.finished {
+    opacity: 0.68;
 }
 
 .schedule-top {
@@ -738,6 +709,13 @@ select:focus-visible {
     color: #614665;
     font-size: 13px;
     font-weight: 800;
+}
+
+.countdown-display {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 21px;
+    line-height: 1;
+    letter-spacing: 1px;
 }
 
 .schedule-days {
@@ -1025,24 +1003,20 @@ select:focus-visible {
         margin-bottom: 4px;
     }
 
-    .time-grid {
-        gap: 8px;
+    .duration-grid {
+        gap: 6px;
     }
 
-    .days-grid {
-        gap: 3px;
+    .duration-input .form-input {
+        padding: 0 5px;
+        font-size: 16px;
     }
 
-    .day-option span {
-        min-height: 38px;
-        font-size: 10px;
+    .duration-input span {
+        font-size: 9px;
     }
 
-    .day-actions {
-        gap: 4px;
-    }
-
-    .day-actions button {
+    .timer-hint {
         font-size: 10px;
     }
 
@@ -1072,6 +1046,10 @@ select:focus-visible {
 
     .schedule-time {
         font-size: 12px;
+    }
+
+    .countdown-display {
+        font-size: 19px;
     }
 
     .schedule-days {
